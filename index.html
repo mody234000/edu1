@@ -1,0 +1,774 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>التحليل البصري لتوزيع أعضاء هيئة التدريس - جامعة جازان</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.0.0"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background-color: #f5f7fa;
+            color: #333;
+            line-height: 1.6;
+            padding: 20px;
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+        
+        .container {
+            background-color: white;
+            border-radius: 15px;
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.08);
+            padding: 30px;
+            margin-bottom: 30px;
+        }
+        
+        header {
+            text-align: center;
+            margin-bottom: 40px;
+            padding-bottom: 20px;
+            border-bottom: 2px solid #3498db;
+        }
+        
+        h1 {
+            color: #2c3e50;
+            font-size: 32px;
+            margin-bottom: 10px;
+        }
+        
+        .subtitle {
+            color: #7f8c8d;
+            font-size: 18px;
+            margin-bottom: 20px;
+        }
+        
+        .charts-container {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+            margin-bottom: 40px;
+        }
+        
+        @media (max-width: 1024px) {
+            .charts-container {
+                grid-template-columns: 1fr;
+            }
+        }
+        
+        .chart-box {
+            background-color: white;
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: 0 3px 10px rgba(0, 0, 0, 0.05);
+            border: 1px solid #ecf0f1;
+        }
+        
+        .chart-title {
+            color: #2c3e50;
+            font-size: 20px;
+            margin-bottom: 15px;
+            text-align: center;
+            padding-bottom: 10px;
+            border-bottom: 1px solid #ecf0f1;
+        }
+        
+        .chart-container {
+            position: relative;
+            height: 400px;
+            width: 100%;
+        }
+        
+        .analysis-section {
+            background-color: #f8f9fa;
+            border-radius: 12px;
+            padding: 25px;
+            margin-top: 30px;
+            border-right: 5px solid #3498db;
+        }
+        
+        .section-title {
+            color: #2c3e50;
+            font-size: 24px;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+        }
+        
+        .section-title i {
+            margin-left: 10px;
+            color: #3498db;
+        }
+        
+        .analysis-points {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+        
+        @media (max-width: 768px) {
+            .analysis-points {
+                grid-template-columns: 1fr;
+            }
+        }
+        
+        .point {
+            background-color: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+            border-top: 3px solid #3498db;
+        }
+        
+        .point-title {
+            color: #2c3e50;
+            font-size: 18px;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+        }
+        
+        .point-title i {
+            margin-left: 8px;
+            color: #3498db;
+        }
+        
+        .point-content {
+            color: #555;
+            line-height: 1.8;
+        }
+        
+        .highlight {
+            background-color: #e8f4fc;
+            padding: 3px 8px;
+            border-radius: 4px;
+            font-weight: bold;
+            color: #2980b9;
+        }
+        
+        .negative {
+            color: #e74c3c;
+            font-weight: bold;
+        }
+        
+        .positive {
+            color: #27ae60;
+            font-weight: bold;
+        }
+        
+        .toggle-buttons {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin-bottom: 30px;
+        }
+        
+        .toggle-btn {
+            padding: 10px 25px;
+            background-color: #ecf0f1;
+            border: none;
+            border-radius: 30px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: all 0.3s ease;
+            color: #2c3e50;
+        }
+        
+        .toggle-btn.active {
+            background-color: #3498db;
+            color: white;
+        }
+        
+        .toggle-btn:hover {
+            background-color: #3498db;
+            color: white;
+        }
+        
+        footer {
+            text-align: center;
+            margin-top: 40px;
+            padding-top: 20px;
+            border-top: 1px solid #ecf0f1;
+            color: #7f8c8d;
+            font-size: 14px;
+        }
+        
+        .legend {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            margin-top: 15px;
+            flex-wrap: wrap;
+        }
+        
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .legend-color {
+            width: 20px;
+            height: 20px;
+            border-radius: 4px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>📊 التحليل البصري لتوزيع أعضاء هيئة التدريس</h1>
+            <div class="subtitle">جامعة جازان - مقارنة بين عامي 2021 و 2024</div>
+        </header>
+        
+        <div class="toggle-buttons">
+            <button class="toggle-btn active" onclick="showYear('2021')">عرض بيانات 2021</button>
+            <button class="toggle-btn" onclick="showYear('2024')">عرض بيانات 2024</button>
+            <button class="toggle-btn" onclick="showYear('comparison')">المقارنة بين السنتين</button>
+        </div>
+        
+        <div id="charts-2021" class="charts-container">
+            <div class="chart-box">
+                <div class="chart-title">📈 توزيع أعضاء هيئة التدريس 2021</div>
+                <div class="chart-container">
+                    <canvas id="chart2021"></canvas>
+                </div>
+                <div class="legend">
+                    <div class="legend-item">
+                        <div class="legend-color" style="background-color: #3498db;"></div>
+                        <span>ذكور</span>
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-color" style="background-color: #e74c3c;"></div>
+                        <span>إناث</span>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="chart-box">
+                <div class="chart-title">🥧 التوزيع النسبي للذكور والإناث 2021</div>
+                <div class="chart-container">
+                    <canvas id="pieChart2021"></canvas>
+                </div>
+            </div>
+        </div>
+        
+        <div id="charts-2024" class="charts-container" style="display: none;">
+            <div class="chart-box">
+                <div class="chart-title">📈 توزيع أعضاء هيئة التدريس 2024</div>
+                <div class="chart-container">
+                    <canvas id="chart2024"></canvas>
+                </div>
+                <div class="legend">
+                    <div class="legend-item">
+                        <div class="legend-color" style="background-color: #3498db;"></div>
+                        <span>ذكور</span>
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-color" style="background-color: #e74c3c;"></div>
+                        <span>إناث</span>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="chart-box">
+                <div class="chart-title">🥧 التوزيع النسبي للذكور والإناث 2024</div>
+                <div class="chart-container">
+                    <canvas id="pieChart2024"></canvas>
+                </div>
+            </div>
+        </div>
+        
+        <div id="charts-comparison" class="charts-container" style="display: none;">
+            <div class="chart-box">
+                <div class="chart-title">📊 مقارنة نسبة الذكور بين 2021 و 2024</div>
+                <div class="chart-container">
+                    <canvas id="comparisonMalesChart"></canvas>
+                </div>
+                <div class="legend">
+                    <div class="legend-item">
+                        <div class="legend-color" style="background-color: #3498db;"></div>
+                        <span>2021</span>
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-color" style="background-color: #2ecc71;"></div>
+                        <span>2024</span>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="chart-box">
+                <div class="chart-title">📊 مقارنة نسبة الإناث بين 2021 و 2024</div>
+                <div class="chart-container">
+                    <canvas id="comparisonFemalesChart"></canvas>
+                </div>
+                <div class="legend">
+                    <div class="legend-item">
+                        <div class="legend-color" style="background-color: #e74c3c;"></div>
+                        <span>2021</span>
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-color" style="background-color: #f39c12;"></div>
+                        <span>2024</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="analysis-section">
+            <div class="section-title">
+                <i>📋</i> القراءة التحليلية للبيانات
+            </div>
+            
+            <div class="analysis-points">
+                <div class="point">
+                    <div class="point-title"><i>🎯</i> التوزيع الحالي (2024)</div>
+                    <div class="point-content">
+                        - تشغل الرتب العليا نسبة <span class="highlight">88% ذكور</span> في رتبة أستاذ<br>
+                        - رتبة محاضر تحقق <span class="highlight">توازنًا شبه كامل</span> (49% ذكور، 51% إناث)<br>
+                        - الإناث يشكلن الأغلبية في رتبة معيد بنسبة <span class="highlight">57%</span>
+                    </div>
+                </div>
+                
+                <div class="point">
+                    <div class="point-title"><i>📈</i> التطور الزمني الإيجابي</div>
+                    <div class="point-content">
+                        - تحسن في رتبة أستاذ مساعد: <span class="positive">انخفاض 8%</span> في نسبة الذكور<br>
+                        - تقدم للإناث في رتبة معيد: <span class="positive">ارتفاع 8%</span> في التمثيل<br>
+                        - استقرار في الرتب العليا مع تحسن طفيف في التوازن
+                    </div>
+                </div>
+                
+                <div class="point">
+                    <div class="point-title"><i>🔍</i> الملاحظات الرئيسية</div>
+                    <div class="point-content">
+                        - يوجد <span class="highlight">تسلسل هرمي جندري</span> واضح في التوزيع<br>
+                        - نجاح في تحقيق التوازن في الرتب المتوسطة (محاضر)<br>
+                        - فرصة لزيادة تمثيل الإناث في الرتب العليا
+                    </div>
+                </div>
+                
+                <div class="point">
+                    <div class="point-title"><i>💡</i> التوصيات البناءة</div>
+                    <div class="point-content">
+                        - تعزيز برامج التطوير الأكاديمي للباحثات<br>
+                        - سياسات توظيف تراعي تحقيق التنوع والتوازن<br>
+                        - الاستفادة من نموذج رتبة محاضر في الرتب الأخرى
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <footer>
+            <p>تم إنشاء هذا التحليل باستخدام JavaScript و Chart.js | بيانات جامعة جازان 2021-2024</p>
+            <p>يمكن استخدام هذا الملف مباشرة أو رفعه على GitHub Pages لعرضه على الإنترنت</p>
+        </footer>
+    </div>
+
+    <script>
+        // البيانات
+        const academicRanks = ['أستاذ', 'أستاذ مشارك', 'أستاذ مساعد', 'محاضر', 'معيد'];
+        const male2021 = [87, 82, 68, 48, 35];
+        const female2021 = [13, 18, 32, 52, 65];
+        const male2024 = [88, 80, 60, 49, 43];
+        const female2024 = [12, 20, 40, 51, 57];
+        
+        // تلوين المخططات
+        const maleColor = 'rgba(52, 152, 219, 0.8)';
+        const femaleColor = 'rgba(231, 76, 60, 0.8)';
+        const maleColor2021 = 'rgba(52, 152, 219, 0.8)';
+        const maleColor2024 = 'rgba(46, 204, 113, 0.8)';
+        const femaleColor2021 = 'rgba(231, 76, 60, 0.8)';
+        const femaleColor2024 = 'rgba(243, 156, 18, 0.8)';
+        
+        // تهيئة المخططات
+        let chart2021, chart2024, pieChart2021, pieChart2024, comparisonMalesChart, comparisonFemalesChart;
+        
+        // دالة لتهيئة المخططات
+        function initCharts() {
+            // مخطط 2021
+            const ctx2021 = document.getElementById('chart2021').getContext('2d');
+            chart2021 = new Chart(ctx2021, {
+                type: 'bar',
+                data: {
+                    labels: academicRanks,
+                    datasets: [
+                        {
+                            label: 'ذكور 2021',
+                            data: male2021,
+                            backgroundColor: maleColor2021,
+                            borderColor: 'rgba(52, 152, 219, 1)',
+                            borderWidth: 1
+                        },
+                        {
+                            label: 'إناث 2021',
+                            data: female2021,
+                            backgroundColor: femaleColor2021,
+                            borderColor: 'rgba(231, 76, 60, 1)',
+                            borderWidth: 1
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'top',
+                            rtl: true,
+                            labels: {
+                                usePointStyle: true,
+                                padding: 20
+                            }
+                        },
+                        tooltip: {
+                            rtl: true,
+                            callbacks: {
+                                label: function(context) {
+                                    return `${context.dataset.label}: ${context.parsed.y}%`;
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            max: 100,
+                            title: {
+                                display: true,
+                                text: 'النسبة المئوية (%)'
+                            },
+                            ticks: {
+                                callback: function(value) {
+                                    return value + '%';
+                                }
+                            }
+                        },
+                        x: {
+                            title: {
+                                display: true,
+                                text: 'الرتبة الأكاديمية'
+                            }
+                        }
+                    }
+                }
+            });
+            
+            // مخطط دائري 2021
+            const ctxPie2021 = document.getElementById('pieChart2021').getContext('2d');
+            const totalMale2021 = male2021.reduce((a, b) => a + b, 0) / male2021.length;
+            const totalFemale2021 = female2021.reduce((a, b) => a + b, 0) / female2021.length;
+            
+            pieChart2021 = new Chart(ctxPie2021, {
+                type: 'pie',
+                data: {
+                    labels: ['ذكور 2021', 'إناث 2021'],
+                    datasets: [{
+                        data: [totalMale2021, totalFemale2021],
+                        backgroundColor: [maleColor2021, femaleColor2021],
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'top',
+                            rtl: true
+                        },
+                        tooltip: {
+                            rtl: true,
+                            callbacks: {
+                                label: function(context) {
+                                    const value = context.parsed;
+                                    const total = context.dataset.data.reduce((a, b) => a + b, 0);
+                                    const percentage = Math.round((value / total) * 100);
+                                    return `${context.label}: ${value.toFixed(1)}% (${percentage}%)`;
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+            
+            // مخطط 2024
+            const ctx2024 = document.getElementById('chart2024').getContext('2d');
+            chart2024 = new Chart(ctx2024, {
+                type: 'bar',
+                data: {
+                    labels: academicRanks,
+                    datasets: [
+                        {
+                            label: 'ذكور 2024',
+                            data: male2024,
+                            backgroundColor: maleColor2024,
+                            borderColor: 'rgba(46, 204, 113, 1)',
+                            borderWidth: 1
+                        },
+                        {
+                            label: 'إناث 2024',
+                            data: female2024,
+                            backgroundColor: femaleColor2024,
+                            borderColor: 'rgba(243, 156, 18, 1)',
+                            borderWidth: 1
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'top',
+                            rtl: true,
+                            labels: {
+                                usePointStyle: true,
+                                padding: 20
+                            }
+                        },
+                        tooltip: {
+                            rtl: true,
+                            callbacks: {
+                                label: function(context) {
+                                    return `${context.dataset.label}: ${context.parsed.y}%`;
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            max: 100,
+                            title: {
+                                display: true,
+                                text: 'النسبة المئوية (%)'
+                            },
+                            ticks: {
+                                callback: function(value) {
+                                    return value + '%';
+                                }
+                            }
+                        },
+                        x: {
+                            title: {
+                                display: true,
+                                text: 'الرتبة الأكاديمية'
+                            }
+                        }
+                    }
+                }
+            });
+            
+            // مخطط دائري 2024
+            const ctxPie2024 = document.getElementById('pieChart2024').getContext('2d');
+            const totalMale2024 = male2024.reduce((a, b) => a + b, 0) / male2024.length;
+            const totalFemale2024 = female2024.reduce((a, b) => a + b, 0) / female2024.length;
+            
+            pieChart2024 = new Chart(ctxPie2024, {
+                type: 'pie',
+                data: {
+                    labels: ['ذكور 2024', 'إناث 2024'],
+                    datasets: [{
+                        data: [totalMale2024, totalFemale2024],
+                        backgroundColor: [maleColor2024, femaleColor2024],
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'top',
+                            rtl: true
+                        },
+                        tooltip: {
+                            rtl: true,
+                            callbacks: {
+                                label: function(context) {
+                                    const value = context.parsed;
+                                    const total = context.dataset.data.reduce((a, b) => a + b, 0);
+                                    const percentage = Math.round((value / total) * 100);
+                                    return `${context.label}: ${value.toFixed(1)}% (${percentage}%)`;
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+            
+            // مخطط مقارنة الذكور
+            const ctxCompMales = document.getElementById('comparisonMalesChart').getContext('2d');
+            comparisonMalesChart = new Chart(ctxCompMales, {
+                type: 'line',
+                data: {
+                    labels: academicRanks,
+                    datasets: [
+                        {
+                            label: 'ذكور 2021',
+                            data: male2021,
+                            backgroundColor: maleColor2021,
+                            borderColor: 'rgba(52, 152, 219, 1)',
+                            borderWidth: 3,
+                            fill: false,
+                            tension: 0.1
+                        },
+                        {
+                            label: 'ذكور 2024',
+                            data: male2024,
+                            backgroundColor: maleColor2024,
+                            borderColor: 'rgba(46, 204, 113, 1)',
+                            borderWidth: 3,
+                            fill: false,
+                            tension: 0.1
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'top',
+                            rtl: true
+                        },
+                        tooltip: {
+                            rtl: true,
+                            callbacks: {
+                                label: function(context) {
+                                    return `${context.dataset.label}: ${context.parsed.y}%`;
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            max: 100,
+                            title: {
+                                display: true,
+                                text: 'النسبة المئوية (%)'
+                            },
+                            ticks: {
+                                callback: function(value) {
+                                    return value + '%';
+                                }
+                            }
+                        },
+                        x: {
+                            title: {
+                                display: true,
+                                text: 'الرتبة الأكاديمية'
+                            }
+                        }
+                    }
+                }
+            });
+            
+            // مخطط مقارنة الإناث
+            const ctxCompFemales = document.getElementById('comparisonFemalesChart').getContext('2d');
+            comparisonFemalesChart = new Chart(ctxCompFemales, {
+                type: 'line',
+                data: {
+                    labels: academicRanks,
+                    datasets: [
+                        {
+                            label: 'إناث 2021',
+                            data: female2021,
+                            backgroundColor: femaleColor2021,
+                            borderColor: 'rgba(231, 76, 60, 1)',
+                            borderWidth: 3,
+                            fill: false,
+                            tension: 0.1
+                        },
+                        {
+                            label: 'إناث 2024',
+                            data: female2024,
+                            backgroundColor: femaleColor2024,
+                            borderColor: 'rgba(243, 156, 18, 1)',
+                            borderWidth: 3,
+                            fill: false,
+                            tension: 0.1
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'top',
+                            rtl: true
+                        },
+                        tooltip: {
+                            rtl: true,
+                            callbacks: {
+                                label: function(context) {
+                                    return `${context.dataset.label}: ${context.parsed.y}%`;
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            max: 100,
+                            title: {
+                                display: true,
+                                text: 'النسبة المئوية (%)'
+                            },
+                            ticks: {
+                                callback: function(value) {
+                                    return value + '%';
+                                }
+                            }
+                        },
+                        x: {
+                            title: {
+                                display: true,
+                                text: 'الرتبة الأكاديمية'
+                            }
+                        }
+                    }
+                }
+            });
+        }
+        
+        // دالة لعرض السنة المحددة
+        function showYear(year) {
+            // تحديث الأزرار النشطة
+            document.querySelectorAll('.toggle-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            event.target.classList.add('active');
+            
+            // إخفاء جميع المخططات
+            document.getElementById('charts-2021').style.display = 'none';
+            document.getElementById('charts-2024').style.display = 'none';
+            document.getElementById('charts-comparison').style.display = 'none';
+            
+            // عرض المخططات المطلوبة
+            if (year === '2021') {
+                document.getElementById('charts-2021').style.display = 'grid';
+            } else if (year === '2024') {
+                document.getElementById('charts-2024').style.display = 'grid';
+            } else if (year === 'comparison') {
+                document.getElementById('charts-comparison').style.display = 'grid';
+            }
+        }
+        
+        // تهيئة المخططات عند تحميل الصفحة
+        document.addEventListener('DOMContentLoaded', function() {
+            initCharts();
+        });
+    </script>
+</body>
+</html>
